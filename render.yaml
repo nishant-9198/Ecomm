@@ -10,7 +10,7 @@ services:
     name: shopease-api
     env: docker
     dockerContext: ./backend
-    dockerfilePath: Dockerfile
+    dockerfilePath: ./backend/Dockerfile
     plan: free
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
