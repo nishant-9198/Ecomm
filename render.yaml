@@ -1,7 +1,6 @@
 databases:
   - name: shopease-db
     databaseName: shopeasedb
-    user: postgres
     plan: free
 
 services:
