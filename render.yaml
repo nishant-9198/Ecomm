@@ -25,11 +25,11 @@ services:
       - key: UploadProvider
         value: Cloudinary
       - key: Cloudinary__CloudName
-        sync: false
+        value: dcboricl9
       - key: Cloudinary__ApiKey
-        sync: false
+        value: "353221611378242"
       - key: Cloudinary__ApiSecret
-        sync: false
+        value: pUC0an7nD_NwxQglKexA6NKxvEs
       - key: Jwt__Secret
         value: SuperSecretKeyThatIsAtLeast32CharactersLongForSecurityReasons123456
       - key: Jwt__Issuer
