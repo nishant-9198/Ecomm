@@ -40,8 +40,9 @@ services:
         value: "120"
 
   # The Vite React frontend static site
-  - type: static
+  - type: web
     name: shopease-frontend
+    env: static
     plan: free
     rootDir: frontend
     buildCommand: echo "VITE_USE_BACKEND=true" > .env && echo "VITE_API_URL=https://$API_HOST" >> .env && npm install && npm run build
