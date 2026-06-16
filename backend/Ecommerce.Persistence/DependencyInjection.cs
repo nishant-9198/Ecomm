@@ -15,8 +15,11 @@ namespace Ecommerce.Persistence
 
             if (dbProvider.Equals("PostgreSQL", System.StringComparison.OrdinalIgnoreCase))
             {
+                var connectionString = configuration.GetConnectionString("PostgresConnection");
+                connectionString = ConvertPostgresUriToConnectionString(connectionString);
+
                 services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
+                    options.UseNpgsql(connectionString));
             }
             else
             {
@@ -31,6 +34,28 @@ namespace Ecommerce.Persistence
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
+        }
+
+        private static string ConvertPostgresUriToConnectionString(string connectionString)
+        {
+            if (string.IsNullOrEmpty(connectionString)) return connectionString;
+
+            if (connectionString.StartsWith("postgres://", System.StringComparison.OrdinalIgnoreCase) ||
+                connectionString.StartsWith("postgresql://", System.StringComparison.OrdinalIgnoreCase))
+            {
+                var databaseUri = new System.Uri(connectionString);
+                var userInfo = databaseUri.UserInfo.Split(':');
+
+                var username = userInfo[0];
+                var password = userInfo.Length > 1 ? userInfo[1] : "";
+                var host = databaseUri.Host;
+                var port = databaseUri.Port == -1 ? 5432 : databaseUri.Port;
+                var databaseName = databaseUri.LocalPath.TrimStart('/');
+
+                return $"Host={host};Port={port};Database={databaseName};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+            }
+
+            return connectionString;
         }
     }
 }
