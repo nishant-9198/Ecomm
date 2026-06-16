@@ -1,10 +1,10 @@
-services:
-  # A PostgreSQL database
-  - type: database
-    name: shopease-db
+databases:
+  - name: shopease-db
     databaseName: shopeasedb
     user: postgres
     plan: free
+
+services:
 
   # The ASP.NET Core Web API backend
   - type: web
