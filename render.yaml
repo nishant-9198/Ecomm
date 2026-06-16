@@ -46,7 +46,7 @@ services:
     plan: free
     rootDir: frontend
     buildCommand: echo "VITE_USE_BACKEND=true" > .env && echo "VITE_API_URL=https://$API_HOST" >> .env && npm install && npm run build
-    publishPath: dist
+    staticPublishPath: dist
     envVars:
       - key: API_HOST
         fromService:
