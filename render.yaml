@@ -43,12 +43,9 @@ services:
     name: shopease-frontend
     runtime: static
     rootDir: frontend
-    buildCommand: echo "VITE_USE_BACKEND=true" > .env && echo "VITE_API_URL=https://$API_HOST" >> .env && npm install && npm run build
+    buildCommand: echo "VITE_USE_BACKEND=true" > .env && echo "VITE_API_URL=$VITE_API_URL" >> .env && npm install && npm run build
     staticPublishPath: dist
     envVars:
-      - key: API_HOST
-        fromService:
-          name: shopease-api
-          type: web
-          property: host
+      - key: VITE_API_URL
+        value: https://shopease-api.onrender.com
 
