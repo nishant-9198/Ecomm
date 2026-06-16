@@ -144,3 +144,49 @@ html, body {
   box-sizing: border-box;
   max-width: 100%;
 }
+
+/* ✅ Premium Outlined Gradient Text */
+.shop-ease-outline-logo {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.25);
+  background: linear-gradient(to right, #ffffff, #9ca3ff, #6c7bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
+
+.shop-ease-outline-logo:hover {
+  -webkit-text-stroke: 1px rgba(156, 163, 255, 0.7);
+  filter: drop-shadow(0 0 15px rgba(108, 123, 255, 0.35));
+}
+
+/* ✅ Premium Modal Inputs */
+.input {
+  width: 100%;
+  background-color: #030712;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 0.75rem 1rem; /* p-3.5 */
+  font-size: 0.75rem; /* text-xs */
+  color: #ffffff;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.input:focus {
+  border-color: rgba(250, 204, 21, 0.3);
+  background-color: rgba(255, 255, 255, 0.01);
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.05);
+}
+
+

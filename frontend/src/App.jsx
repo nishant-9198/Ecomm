@@ -38,7 +38,7 @@ function Layout() {
           <Route path="/" element={<LandingPage />} />
         </Routes>
       ) : (
-        <div className="bg-gray-100 min-h-screen">
+        <div className={`bg-gray-100 min-h-screen ${!hideNavbar ? "pt-[116px] sm:pt-[72px]" : ""}`}>
           <div className="max-w-7xl mx-auto px-4 py-4">
             <Routes>
 

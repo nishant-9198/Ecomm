@@ -1,6 +1,10 @@
 {
   "Files": [
     {
+      "Id": "D:\\Ecom\\Ecomm\\backend\\Ecommerce.API\\wwwroot\\uploads\\product_9a92997f-477e-4996-9dd4-f63d601d217c.jpg",
+      "PackagePath": "staticwebassets\\uploads\\product_9a92997f-477e-4996-9dd4-f63d601d217c.jpg"
+    },
+    {
       "Id": "D:\\Ecom\\Ecomm\\backend\\Ecommerce.API\\wwwroot\\uploads\\product_f9aa4e2c-955a-47e4-b5e0-6b566b4cde17.jpg",
       "PackagePath": "staticwebassets\\uploads\\product_f9aa4e2c-955a-47e4-b5e0-6b566b4cde17.jpg"
     },
