@@ -9,10 +9,10 @@ const NavBar = () => {
   const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
-    setUser(null);
     localStorage.removeItem("user");
+    setUser(null);
     setOpen(false);
-    navigate("/home", { replace: true });
+    window.location.href = "/";
   };
 
   return (

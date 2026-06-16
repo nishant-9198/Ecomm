@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../utils/api";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -9,7 +10,19 @@ const AdminOrders = () => {
     loadOrders();
   }, []);
 
-  const loadOrders = () => {
+  const loadOrders = async () => {
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    if (useBackend) {
+      try {
+        const res = await apiFetch("/api/orders");
+        const data = await res.json();
+        setOrders(data || []);
+        return;
+      } catch (err) {
+        console.log("Backend failed to load orders");
+      }
+    }
+
     let allOrders = [];
 
     for (let i = 0; i < localStorage.length; i++) {
@@ -27,7 +40,27 @@ const AdminOrders = () => {
   };
 
   // ✅ STATUS UPDATE (ONLY FIX: re-render)
-  const handleStatusChange = (orderId, newStatus) => {
+  // ✅ STATUS UPDATE
+  const handleStatusChange = async (orderId, newStatus) => {
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    if (useBackend) {
+      try {
+        const res = await apiFetch(`/api/orders/${orderId}/status`, {
+          method: "PUT",
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (!res.ok) {
+          alert("Failed to update status on backend");
+          return;
+        }
+        loadOrders();
+        return;
+      } catch (err) {
+        alert("Error updating order status");
+        return;
+      }
+    }
+
     let updatedOrders = [];
 
     for (let i = 0; i < localStorage.length; i++) {
@@ -58,8 +91,27 @@ const AdminOrders = () => {
     setOrders([...updatedOrders]); // ✅ FIX
   };
 
-  // ✅ ACTION FIX (ONLY FIX: re-render)
-  const handleQuickUpdate = (orderId) => {
+  // ✅ ACTION FIX
+  const handleQuickUpdate = async (orderId) => {
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    if (useBackend) {
+      try {
+        const res = await apiFetch(`/api/orders/${orderId}/status`, {
+          method: "PUT",
+          body: JSON.stringify({ status: "Processing" })
+        });
+        if (!res.ok) {
+          alert("Failed to update status on backend");
+          return;
+        }
+        loadOrders();
+        return;
+      } catch (err) {
+        alert("Error updating order status");
+        return;
+      }
+    }
+
     let updatedOrders = [];
 
     for (let i = 0; i < localStorage.length; i++) {

@@ -23,17 +23,78 @@ export const Login = () => {
     inputRef.current.focus();
   }, []);
 
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     if (mobile.length !== 10) {
       toast.error("Enter valid mobile number");
       return;
+    }
+
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    const API_URL = import.meta.env.VITE_API_URL;
+
+    if (useBackend) {
+      try {
+        const res = await fetch(`${API_URL}/api/auth/send-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile })
+        });
+        if (!res.ok) {
+          toast.error("Failed to send OTP");
+          return;
+        }
+      } catch (err) {
+        toast.error("Error connecting to backend");
+        return;
+      }
     }
 
     setShowOTP(true);
     toast.success("OTP sent ✅");
   };
 
-  const handleVerifyOTP = () => {
+  const handleVerifyOTP = async () => {
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    const API_URL = import.meta.env.VITE_API_URL;
+
+    if (useBackend) {
+      try {
+        const res = await fetch(`${API_URL}/api/auth/verify-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile, otp })
+        });
+
+        if (!res.ok) {
+          toast.error("Invalid OTP ❌");
+          return;
+        }
+
+        const data = await res.json();
+        const user = {
+          id: data.user.id,
+          mobile: data.user.mobile,
+          name: data.user.name,
+          role: data.user.role,
+          email: data.user.email,
+          address: data.user.address,
+          img: data.user.img,
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken
+        };
+
+        setUser(user);
+        localStorage.setItem("user", JSON.stringify(user));
+
+        toast.success("Login Successful ✅");
+        navigate("/home");
+        return;
+      } catch (err) {
+        toast.error("Error connecting to backend");
+        return;
+      }
+    }
+
     if (otp !== "000000") {
       toast.error("Invalid OTP ❌");
       return;

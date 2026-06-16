@@ -1,0 +1,41 @@
+version: '3.4'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: shopease-db
+    environment:
+      POSTGRES_DB: shopeasedb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  webapi:
+    image: shopease-api
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shopease-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8080
+      - DatabaseProvider=PostgreSQL
+      - ConnectionStrings__PostgresConnection=Host=db;Database=shopeasedb;Username=postgres;Password=postgrespassword
+      - UploadProvider=Local
+      - Jwt__Secret=SuperSecretKeyThatIsAtLeast32CharactersLongForSecurityReasons123456
+      - Jwt__Issuer=ShopEaseBackend
+      - Jwt__Audience=ShopEaseFrontend
+      - Jwt__ExpiryInMinutes=120
+    ports:
+      - "5000:8080"
+    depends_on:
+      - db
+    volumes:
+      - uploads-data:/app/wwwroot/uploads
+
+volumes:
+  pgdata:
+  uploads-data:

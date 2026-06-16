@@ -1,7 +1,7 @@
 import { Product as StaticProducts } from "../data/Product";
+import { apiFetch } from "./api";
 
 const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
-const API_URL = import.meta.env.VITE_API_URL;
 
 // ✅ FINAL FUNCTION
 export const getProducts = async () => {
@@ -9,7 +9,7 @@ export const getProducts = async () => {
   // ✅ ✅ BACKEND MODE (SEPARATE ONLY)
   if (useBackend) {
     try {
-      const res = await fetch(`${API_URL}/api/products`);
+      const res = await apiFetch("/api/products");
       const data = await res.json();
 
       return data || [];

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getProducts } from "../utils/getProducts";
 import AddProductModal from "./AddProductModal";
 import EditProductModal from "./EditProductModal";
+import { apiFetch } from "../utils/api";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -19,7 +20,23 @@ const AdminProducts = () => {
   };
 
   // ✅ DELETE PRODUCT
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    if (useBackend) {
+      try {
+        const res = await apiFetch(`/api/products/${id}`, {
+          method: "DELETE"
+        });
+        if (!res.ok) {
+          alert("Failed to delete product from backend");
+          return;
+        }
+      } catch (err) {
+        alert("Error deleting product from backend");
+        return;
+      }
+    }
+
     const updated = products.filter((p) => p.id !== id);
 
     setProducts(updated);

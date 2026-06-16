@@ -1,0 +1,16 @@
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\Ecommerce.Application.csproj.AssemblyReference.cache
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\Ecommerce.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\Ecommerce.Application.AssemblyInfoInputs.cache
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\Ecommerce.Application.AssemblyInfo.cs
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\Ecommerce.Application.csproj.CoreCompileInputs.cache
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\Ecommerce.Application.sourcelink.json
+D:\Ecom\Ecomm\backend\Ecommerce.Application\bin\Debug\net8.0\Ecommerce.Application.deps.json
+D:\Ecom\Ecomm\backend\Ecommerce.Application\bin\Debug\net8.0\Ecommerce.Application.dll
+D:\Ecom\Ecomm\backend\Ecommerce.Application\bin\Debug\net8.0\Ecommerce.Application.pdb
+D:\Ecom\Ecomm\backend\Ecommerce.Application\bin\Debug\net8.0\Ecommerce.Domain.dll
+D:\Ecom\Ecomm\backend\Ecommerce.Application\bin\Debug\net8.0\Ecommerce.Domain.pdb
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\Ecommerc.C5F54E74.Up2Date
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\Ecommerce.Application.dll
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\refint\Ecommerce.Application.dll
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\Ecommerce.Application.pdb
+D:\Ecom\Ecomm\backend\Ecommerce.Application\obj\Debug\net8.0\ref\Ecommerce.Application.dll

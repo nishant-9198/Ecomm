@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiFetch } from "../utils/api";
 
 const AddProductModal = ({ onClose }) => {
   const [form, setForm] = useState({
@@ -39,22 +40,43 @@ const AddProductModal = ({ onClose }) => {
       return;
     }
 
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    
     const newProduct = {
-       id: Date.now() + Math.random(),
       ...form,
       price: Number(form.price),
       img: image,
       ...flags,
     };
 
-    // ✅ LOCAL STORAGE
-    const existing =
-      JSON.parse(localStorage.getItem("products")) || [];
+    if (useBackend) {
+      try {
+        const res = await apiFetch("/api/products", {
+          method: "POST",
+          body: JSON.stringify(newProduct)
+        });
+        if (!res.ok) {
+          alert("Failed to create product on backend");
+          return;
+        }
+      } catch (err) {
+        alert("Error connecting to backend");
+        return;
+      }
+    } else {
+      // ✅ LOCAL STORAGE
+      const localProduct = {
+        id: Date.now() + Math.random(),
+        ...newProduct
+      };
+      const existing =
+        JSON.parse(localStorage.getItem("products")) || [];
 
-    localStorage.setItem(
-      "products",
-      JSON.stringify([...existing, newProduct])
-    );
+      localStorage.setItem(
+        "products",
+        JSON.stringify([...existing, localProduct])
+      );
+    }
 
     onClose();
   };

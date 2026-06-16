@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../utils/api";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -9,8 +10,24 @@ const AdminUsers = () => {
     loadUsers();
   }, []);
 
-  // ✅ LOAD USERS FROM LOCAL STORAGE
-  const loadUsers = () => {
+  // ✅ LOAD USERS FROM API / LOCAL STORAGE
+  const loadUsers = async () => {
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    if (useBackend) {
+      try {
+        const res = await apiFetch("/api/users");
+        const data = await res.json();
+        const formatted = (data || []).map(u => ({
+          ...u,
+          joined: new Date().toLocaleDateString()
+        }));
+        setUsers(formatted);
+        return;
+      } catch (err) {
+        console.log("Backend failed to load users");
+      }
+    }
+
     let allUsers = [];
 
     // ✅ CURRENT USER

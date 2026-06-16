@@ -1,0 +1,40 @@
+services:
+  # A PostgreSQL database
+  - type: database
+    name: shopease-db
+    databaseName: shopeasedb
+    user: postgres
+    plan: free
+
+  # The ASP.NET Core Web API backend
+  - type: web
+    name: shopease-api
+    env: docker
+    dockerContext: ./backend
+    dockerfilePath: Dockerfile
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: DatabaseProvider
+        value: PostgreSQL
+      - key: ConnectionStrings__PostgresConnection
+        fromDatabase:
+          name: shopease-db
+          property: connectionString
+      - key: UploadProvider
+        value: Cloudinary
+      - key: Cloudinary__CloudName
+        sync: false
+      - key: Cloudinary__ApiKey
+        sync: false
+      - key: Cloudinary__ApiSecret
+        sync: false
+      - key: Jwt__Secret
+        value: SuperSecretKeyThatIsAtLeast32CharactersLongForSecurityReasons123456
+      - key: Jwt__Issuer
+        value: ShopEaseBackend
+      - key: Jwt__Audience
+        value: ShopEaseFrontend
+      - key: Jwt__ExpiryInMinutes
+        value: "120"

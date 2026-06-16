@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../utils/api";
 
 const Checkout = () => {
   const { user, setUser } = useContext(AppContext);
@@ -74,16 +75,12 @@ const Checkout = () => {
 
         const useBackend =
           import.meta.env.VITE_USE_BACKEND === "true";
-        const API_URL = import.meta.env.VITE_API_URL;
 
         // ✅ BACKEND MODE
         if (useBackend) {
           try {
-            await fetch(`${API_URL}/api/orders`, {
+            await apiFetch("/api/orders", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
               body: JSON.stringify(newOrder),
             });
           } catch {

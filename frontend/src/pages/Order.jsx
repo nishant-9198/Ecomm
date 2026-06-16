@@ -1,5 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
+import { apiFetch } from "../utils/api";
 
 const Orders = () => {
   const { user } = useContext(AppContext);
@@ -12,11 +13,10 @@ const Orders = () => {
       const useBackend =
         import.meta.env.VITE_USE_BACKEND === "true";
       const API_URL = import.meta.env.VITE_API_URL;
-
       // ✅ BACKEND
       if (useBackend) {
         try {
-          const res = await fetch(`${API_URL}/api/orders`);
+          const res = await apiFetch("/api/orders");
           const data = await res.json();
           setOrders(data);
           return;

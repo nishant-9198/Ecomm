@@ -1,5 +1,6 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
+import { apiFetch } from "../utils/api";
 
 const avatars = [
   "https://i.pravatar.cc/150?img=1",
@@ -14,6 +15,27 @@ const Profile = () => {
 
   const [edit, setEdit] = useState(false);
   const [tempUser, setTempUser] = useState(user || {});
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+      if (useBackend && user) {
+        try {
+          const res = await apiFetch("/api/users/profile");
+          if (res.ok) {
+            const data = await res.json();
+            const merged = { ...user, ...data };
+            setUser(merged);
+            setTempUser(merged);
+            localStorage.setItem("user", JSON.stringify(merged));
+          }
+        } catch (err) {
+          console.log("Failed to load profile from backend");
+        }
+      }
+    };
+    loadProfile();
+  }, []);
 
   const handleChange = (e) => {
     setTempUser({
@@ -39,7 +61,31 @@ const Profile = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    if (useBackend) {
+      try {
+        const res = await apiFetch("/api/users/profile", {
+          method: "PUT",
+          body: JSON.stringify(tempUser)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const merged = { ...user, ...data };
+          setUser(merged);
+          localStorage.setItem("user", JSON.stringify(merged));
+          setEdit(false);
+          return;
+        } else {
+          alert("Failed to save profile on backend");
+          return;
+        }
+      } catch (err) {
+        alert("Error saving profile");
+        return;
+      }
+    }
+
     setUser(tempUser);
     setEdit(false);
   };

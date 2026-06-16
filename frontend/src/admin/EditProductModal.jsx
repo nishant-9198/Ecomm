@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiFetch } from "../utils/api";
 
 const EditProductModal = ({ product, onClose }) => {
   const [form, setForm] = useState({ ...product });
@@ -18,21 +19,39 @@ const EditProductModal = ({ product, onClose }) => {
     reader.readAsDataURL(file);
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
+    const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    
     const updatedProduct = {
       ...form,
       price: Number(form.price),
       img: image,
     };
 
-    const existing =
-      JSON.parse(localStorage.getItem("products")) || [];
+    if (useBackend) {
+      try {
+        const res = await apiFetch(`/api/products/${product.id}`, {
+          method: "PUT",
+          body: JSON.stringify(updatedProduct)
+        });
+        if (!res.ok) {
+          alert("Failed to update product on backend");
+          return;
+        }
+      } catch (err) {
+        alert("Error connecting to backend");
+        return;
+      }
+    } else {
+      const existing =
+        JSON.parse(localStorage.getItem("products")) || [];
 
-    const updatedList = existing.map((p) =>
-      p.id === product.id ? updatedProduct : p
-    );
+      const updatedList = existing.map((p) =>
+        p.id === product.id ? updatedProduct : p
+      );
 
-    localStorage.setItem("products", JSON.stringify(updatedList));
+      localStorage.setItem("products", JSON.stringify(updatedList));
+    }
 
     onClose();
   };

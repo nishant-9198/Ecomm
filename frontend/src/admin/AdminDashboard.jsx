@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getProducts } from "../utils/getProducts";
+import { apiFetch } from "../utils/api";
 
 const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
 const API_URL = import.meta.env.VITE_API_URL;
@@ -15,7 +16,7 @@ const AdminDashboard = () => {
 
       if (useBackend) {
         try {
-          const res = await fetch(`${API_URL}/api/orders`);
+          const res = await apiFetch("/api/orders");
           const data = await res.json();
           setOrders(data || []);
           return;
