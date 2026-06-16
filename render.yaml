@@ -38,3 +38,18 @@ services:
         value: ShopEaseFrontend
       - key: Jwt__ExpiryInMinutes
         value: "120"
+
+  # The Vite React frontend static site
+  - type: static
+    name: shopease-frontend
+    plan: free
+    rootDir: frontend
+    buildCommand: echo "VITE_USE_BACKEND=true" > .env && echo "VITE_API_URL=https://$API_HOST" >> .env && npm install && npm run build
+    publishDir: dist
+    envVars:
+      - key: API_HOST
+        fromService:
+          name: shopease-api
+          type: web
+          property: host
+
