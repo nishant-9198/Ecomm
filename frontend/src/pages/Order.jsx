@@ -50,23 +50,30 @@ const Orders = () => {
       const userKey = `orders_${user?.id}`;
       const localOrders = JSON.parse(localStorage.getItem(userKey)) || [];
 
+      let backendOrders = [];
       if (useBackend) {
         try {
           const res = await apiFetch("/api/orders");
           if (res.ok) {
             const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              setOrders(data);
-              return;
+            if (Array.isArray(data)) {
+              backendOrders = data;
             }
           }
         } catch {
-          console.log("Backend failed → falling back to local orders");
+          console.log("Backend failed to load orders in Order.jsx");
         }
       }
 
-      // Fallback: show localStorage orders so user always sees their orders
-      setOrders(localOrders);
+      // Merge backend and local orders, prioritizing backend orders if IDs overlap
+      const mergedOrders = [...backendOrders];
+      localOrders.forEach((localOrder) => {
+        if (localOrder && localOrder.id && !mergedOrders.some((o) => o.id === localOrder.id)) {
+          mergedOrders.push(localOrder);
+        }
+      });
+
+      setOrders(mergedOrders);
     };
 
     loadOrders();

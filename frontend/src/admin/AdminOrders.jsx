@@ -12,134 +12,138 @@ const AdminOrders = () => {
 
   const loadOrders = async () => {
     const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    let backendOrders = [];
     if (useBackend) {
       try {
         const res = await apiFetch("/api/orders");
-        const data = await res.json();
-        setOrders(data || []);
-        return;
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            backendOrders = data;
+          }
+        }
       } catch (err) {
-        console.log("Backend failed to load orders");
+        console.log("Backend failed to load orders in AdminOrders");
       }
     }
 
-    let allOrders = [];
-
+    let localOrders = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-
       if (key && key.includes("orders_")) {
-        const userOrders =
-          JSON.parse(localStorage.getItem(key)) || [];
-
-        allOrders = [...allOrders, ...userOrders];
+        try {
+          const userOrders = JSON.parse(localStorage.getItem(key)) || [];
+          if (Array.isArray(userOrders)) {
+            localOrders = [...localOrders, ...userOrders];
+          }
+        } catch (e) {
+          console.error("Error parsing local orders for key:", key, e);
+        }
       }
     }
 
-    setOrders(allOrders);
+    const mergedOrders = [...backendOrders];
+    localOrders.forEach((localOrder) => {
+      if (localOrder && localOrder.id && !mergedOrders.some((o) => o.id === localOrder.id)) {
+        mergedOrders.push(localOrder);
+      }
+    });
+
+    setOrders(mergedOrders);
   };
 
-  // ✅ STATUS UPDATE (ONLY FIX: re-render)
   // ✅ STATUS UPDATE
   const handleStatusChange = async (orderId, newStatus) => {
     const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    let updatedOnBackend = false;
     if (useBackend) {
       try {
         const res = await apiFetch(`/api/orders/${orderId}/status`, {
           method: "PUT",
           body: JSON.stringify({ status: newStatus })
         });
-        if (!res.ok) {
-          alert("Failed to update status on backend");
-          return;
+        if (res.ok) {
+          updatedOnBackend = true;
         }
-        loadOrders();
-        return;
       } catch (err) {
-        alert("Error updating order status");
-        return;
+        console.log("Error updating order status on backend, trying local fallback");
       }
     }
 
+    // Update locally regardless of backend status (as fallback or sync)
     let updatedOrders = [];
-
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-
       if (key && key.includes("orders_")) {
-        const userOrders =
-          JSON.parse(localStorage.getItem(key)) || [];
-
-        const updatedUserOrders = userOrders.map((order) =>
-          order.id === orderId
-            ? { ...order, status: newStatus }
-            : order
-        );
-
-        localStorage.setItem(
-          key,
-          JSON.stringify(updatedUserOrders)
-        );
-
-        updatedOrders = [
-          ...updatedOrders,
-          ...updatedUserOrders,
-        ];
+        try {
+          const userOrders = JSON.parse(localStorage.getItem(key)) || [];
+          if (Array.isArray(userOrders)) {
+            const updatedUserOrders = userOrders.map((order) =>
+              order.id === orderId
+                ? { ...order, status: newStatus }
+                : order
+            );
+            localStorage.setItem(key, JSON.stringify(updatedUserOrders));
+            updatedOrders = [...updatedOrders, ...updatedUserOrders];
+          }
+        } catch (e) {
+          console.error("Error updating local order status for key:", key, e);
+        }
       }
     }
 
-    setOrders([...updatedOrders]); // ✅ FIX
+    if (useBackend && updatedOnBackend) {
+      loadOrders();
+    } else {
+      // If backend failed or wasn't used, reflect the local state immediately
+      loadOrders();
+    }
   };
 
   // ✅ ACTION FIX
   const handleQuickUpdate = async (orderId) => {
     const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+    let updatedOnBackend = false;
     if (useBackend) {
       try {
         const res = await apiFetch(`/api/orders/${orderId}/status`, {
           method: "PUT",
           body: JSON.stringify({ status: "Processing" })
         });
-        if (!res.ok) {
-          alert("Failed to update status on backend");
-          return;
+        if (res.ok) {
+          updatedOnBackend = true;
         }
-        loadOrders();
-        return;
       } catch (err) {
-        alert("Error updating order status");
-        return;
+        console.log("Error updating order status on backend, trying local fallback");
       }
     }
 
     let updatedOrders = [];
-
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-
       if (key && key.includes("orders_")) {
-        const userOrders =
-          JSON.parse(localStorage.getItem(key)) || [];
-
-        const updatedUserOrders = userOrders.map((order) =>
-          order.id === orderId
-            ? { ...order, status: "Processing" }
-            : order
-        );
-
-        localStorage.setItem(
-          key,
-          JSON.stringify(updatedUserOrders)
-        );
-
-        updatedOrders = [
-          ...updatedOrders,
-          ...updatedUserOrders,
-        ];
+        try {
+          const userOrders = JSON.parse(localStorage.getItem(key)) || [];
+          if (Array.isArray(userOrders)) {
+            const updatedUserOrders = userOrders.map((order) =>
+              order.id === orderId
+                ? { ...order, status: "Processing" }
+                : order
+            );
+            localStorage.setItem(key, JSON.stringify(updatedUserOrders));
+            updatedOrders = [...updatedOrders, ...updatedUserOrders];
+          }
+        } catch (e) {
+          console.error("Error updating local order status for key:", key, e);
+        }
       }
     }
 
-    setOrders([...updatedOrders]); // ✅ FIX
+    if (useBackend && updatedOnBackend) {
+      loadOrders();
+    } else {
+      loadOrders();
+    }
   };
 
   // ✅ FILTERS

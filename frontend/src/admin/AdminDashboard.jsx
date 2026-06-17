@@ -14,22 +14,47 @@ const AdminDashboard = () => {
       const productData = await getProducts();
       setProducts(productData);
 
+      let backendOrders = [];
       if (useBackend) {
         try {
           const res = await apiFetch("/api/orders");
-          const data = await res.json();
-          setOrders(data || []);
-          return;
-        } catch {
-          console.log("Backend failed → using local");
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              backendOrders = data;
+            }
+          }
+        } catch (err) {
+          console.log("Backend failed to load orders in AdminDashboard → using local");
         }
       }
 
-      const localOrders =
-        JSON.parse(localStorage.getItem("orders")) || [];
+      // Load all local orders from all users
+      let localOrders = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.includes("orders_")) {
+          try {
+            const userOrders = JSON.parse(localStorage.getItem(key)) || [];
+            if (Array.isArray(userOrders)) {
+              localOrders = [...localOrders, ...userOrders];
+            }
+          } catch (e) {
+            console.error("Error parsing local orders for key:", key, e);
+          }
+        }
+      }
 
-      if (localOrders.length) {
-        setOrders(localOrders);
+      // Merge backend and local orders, prioritizing backend orders if IDs overlap
+      const mergedOrders = [...backendOrders];
+      localOrders.forEach((localOrder) => {
+        if (localOrder && localOrder.id && !mergedOrders.some((o) => o.id === localOrder.id)) {
+          mergedOrders.push(localOrder);
+        }
+      });
+
+      if (mergedOrders.length > 0) {
+        setOrders(mergedOrders);
         return;
       }
 
