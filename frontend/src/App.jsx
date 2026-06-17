@@ -11,7 +11,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Checkout from "./pages/CheckOut";
 import LandingPage from "./pages/LandingPage";
 
-/* ✅ NEW IMPORTS */
+
 import AdminLayout from "./admin/AdminLayout";
 import AdminRoute from "./admin/AdminRoute.jsx";
 import AdminDashboard from "./admin/AdminDashboard";
@@ -20,7 +20,7 @@ import AdminOrders from "./admin/AdminOrders";
 import AdminUsers from "./admin/AdminUsers";
 
 
-// ✅ Layout
+//  Layout
 function Layout() {
   const location = useLocation();
 
@@ -89,7 +89,7 @@ function Layout() {
                 }
               />
 
-              {/* ✅ ✅ ADMIN ROUTE (FINAL FIXED) */}
+             
               <Route
                 path="/admin"
                 element={

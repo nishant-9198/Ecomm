@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import { AppContext } from "../context/AppContext";
 import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
@@ -24,20 +24,44 @@ const Home = () => {
     loadProducts();
   }, []);
 
-  // ✅ DYNAMIC CATEGORIES EXTRACT
-  const categories = [
-    "ALL",
-    ...new Set(products.map((p) => p.category).filter(Boolean))
-  ];
+  // 1. Filter products by search term first (case-insensitive)
+  const searchedProducts = useMemo(() => {
+    const term = search?.trim().toLowerCase() || "";
+    if (!term) return products;
+    return products.filter((item) =>
+      item.name?.toLowerCase().includes(term)
+    );
+  }, [products, search]);
 
-  // ✅ FILTER BY SEARCH AND CATEGORY
-  const filteredProducts = products.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "ALL" ||
-      item.category?.toLowerCase() === selectedCategory.toLowerCase();
-    return matchesSearch && matchesCategory;
-  });
+  // 2. Generate category buttons dynamically from searched products only
+  const categories = useMemo(() => {
+    const uniqueCategories = [
+      ...new Set(searchedProducts.map((p) => p.category).filter(Boolean))
+    ];
+    return ["ALL", ...uniqueCategories];
+  }, [searchedProducts]);
+
+  // 3. Reset selected category to "ALL" if search changes and it's no longer available
+  useEffect(() => {
+    if (selectedCategory !== "ALL") {
+      const isAvailable = categories.some(
+        (cat) => cat.toLowerCase() === selectedCategory.toLowerCase()
+      );
+      if (!isAvailable) {
+        setSelectedCategory("ALL");
+      }
+    }
+  }, [categories, selectedCategory]);
+
+  // 4. Filter searched products by selected category (case-insensitive)
+  const filteredProducts = useMemo(() => {
+    return searchedProducts.filter((item) => {
+      const matchesCategory =
+        selectedCategory === "ALL" ||
+        item.category?.toLowerCase() === selectedCategory.toLowerCase();
+      return matchesCategory;
+    });
+  }, [searchedProducts, selectedCategory]);
 
   return (
     <div className="min-h-screen text-white bg-gradient-to-br from-[#020617] via-black to-[#020617] flex flex-col justify-between">
