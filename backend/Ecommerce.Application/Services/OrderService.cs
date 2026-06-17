@@ -37,6 +37,15 @@ namespace Ecommerce.Application.Services
             return _mapper.Map<IEnumerable<OrderDto>>(orders);
         }
 
+        public async Task<PagedResponse<OrderDto>> GetPagedOrdersAsync(string userId, string role, int page, int pageSize)
+        {
+            var targetUserId = role == "admin" ? null : userId;
+            var (items, totalCount) = await _unitOfWork.Orders.GetPagedOrdersAsync(targetUserId, page, pageSize);
+
+            var mappedItems = _mapper.Map<IEnumerable<OrderDto>>(items);
+            return new PagedResponse<OrderDto>(mappedItems, page, pageSize, totalCount);
+        }
+
         public async Task<OrderDto> CreateOrderAsync(string userId, OrderCreateDto dto)
         {
             var order = _mapper.Map<Order>(dto);

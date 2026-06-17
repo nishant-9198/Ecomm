@@ -37,5 +37,25 @@ namespace Ecommerce.Persistence.Repositories
                 .OrderByDescending(o => o.Date)
                 .ToListAsync();
         }
+
+        public async Task<(IEnumerable<Order> Items, int TotalCount)> GetPagedOrdersAsync(string? userId, int page, int pageSize)
+        {
+            var query = _context.Orders.Include(o => o.Products).AsQueryable();
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                query = query.Where(o => o.UserId == userId);
+            }
+
+            query = query.OrderByDescending(o => o.Date);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
     }
 }

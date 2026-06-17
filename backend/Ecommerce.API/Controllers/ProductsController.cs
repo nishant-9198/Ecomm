@@ -18,10 +18,28 @@ namespace Ecommerce.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllProducts()
+        public async Task<IActionResult> GetAllProducts(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? search = null,
+            [FromQuery] string? category = null,
+            [FromQuery] string? brand = null,
+            [FromQuery] decimal? minPrice = null,
+            [FromQuery] decimal? maxPrice = null,
+            [FromQuery] int? rating = null,
+            [FromQuery] bool? inStock = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool paged = false)
         {
-            var result = await _productService.GetAllProductsAsync();
-            return Ok(result);
+            if (paged)
+            {
+                var result = await _productService.GetPagedProductsAsync(
+                    page, pageSize, search, category, brand, minPrice, maxPrice, rating, inStock, sortBy);
+                return Ok(result);
+            }
+
+            var all = await _productService.GetAllProductsAsync();
+            return Ok(all);
         }
 
         [HttpGet("{id:int}")]

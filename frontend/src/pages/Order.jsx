@@ -1,7 +1,8 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
+import Pagination from "../components/ui/Pagination";
 
 const getEstimatedDelivery = (dateStr) => {
   try {
@@ -79,6 +80,15 @@ const Orders = () => {
     loadOrders();
   }, [user]);
 
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
+
+  const totalPages = Math.ceil(orders.length / pageSize);
+
+  const currentOrders = useMemo(() => {
+    return orders.slice((page - 1) * pageSize, page * pageSize);
+  }, [orders, page]);
+
   return (
     <div className="min-h-screen bg-black text-white px-6 md:px-12 py-10">
 
@@ -91,9 +101,10 @@ const Orders = () => {
       ) : (
         <div className="max-w-3xl mx-auto space-y-4">
 
-          {orders.map((order, index) => {
+          {currentOrders.map((order, relativeIndex) => {
+            const absoluteIndex = (page - 1) * pageSize + relativeIndex;
             const total = order.total || 0;
-            const isOpen = openIndex === index;
+            const isOpen = openIndex === absoluteIndex;
             const statuses = ["Confirmed", "Processing", "Shipped", "Delivered"];
             const currentStatusRaw = order.status || "Confirmed";
             const normalizedStatus = currentStatusRaw.charAt(0).toUpperCase() + currentStatusRaw.slice(1).toLowerCase();
@@ -101,13 +112,13 @@ const Orders = () => {
 
             return (
               <div
-                key={index}
+                key={order.id || absoluteIndex}
                 className="bg-[#030712] border border-white/10 rounded-xl transition hover:border-white/20 overflow-hidden"
               >
 
                 <button
                   onClick={() =>
-                    setOpenIndex(isOpen ? null : index)
+                    setOpenIndex(isOpen ? null : absoluteIndex)
                   }
                   className="w-full flex justify-between items-center p-5 select-none hover:bg-white/[0.02] transition"
                 >
@@ -116,7 +127,7 @@ const Orders = () => {
                       {order.date}
                     </p>
                     <p className="text-sm font-serif font-light text-white mt-1">
-                      Order #{index + 1}
+                      Order #{absoluteIndex + 1}
                     </p>
                   </div>
 
@@ -353,6 +364,13 @@ const Orders = () => {
             );
           })}
 
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            hasNextPage={page < totalPages}
+            hasPreviousPage={page > 1}
+          />
         </div>
       )}
     </div>

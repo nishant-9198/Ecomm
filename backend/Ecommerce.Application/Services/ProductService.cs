@@ -45,6 +45,17 @@ namespace Ecommerce.Application.Services
             return await _unitOfWork.Products.GetCategoriesAsync();
         }
 
+        public async Task<PagedResponse<ProductDto>> GetPagedProductsAsync(
+            int page, int pageSize, string? search, string? category, string? brand, 
+            decimal? minPrice, decimal? maxPrice, int? rating, bool? inStock, string? sortBy)
+        {
+            var (items, totalCount) = await _unitOfWork.Products.GetPagedProductsAsync(
+                page, pageSize, search, category, brand, minPrice, maxPrice, rating, inStock, sortBy);
+
+            var mappedItems = _mapper.Map<IEnumerable<ProductDto>>(items);
+            return new PagedResponse<ProductDto>(mappedItems, page, pageSize, totalCount);
+        }
+
         public async Task<ProductDto> CreateProductAsync(ProductCreateDto dto)
         {
             var product = _mapper.Map<Product>(dto);

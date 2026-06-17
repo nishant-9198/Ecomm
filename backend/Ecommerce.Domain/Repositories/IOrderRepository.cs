@@ -9,5 +9,6 @@ namespace Ecommerce.Domain.Repositories
         Task<IEnumerable<Order>> GetOrdersByUserIdAsync(string userId);
         Task<Order?> GetOrderWithItemsByIdAsync(string orderId);
         Task<IEnumerable<Order>> GetAllOrdersWithItemsAsync();
+        Task<(IEnumerable<Order> Items, int TotalCount)> GetPagedOrdersAsync(string? userId, int page, int pageSize);
     }
 }

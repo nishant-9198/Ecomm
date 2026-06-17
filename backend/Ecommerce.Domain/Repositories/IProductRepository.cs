@@ -8,5 +8,8 @@ namespace Ecommerce.Domain.Repositories
     {
         Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category);
         Task<IEnumerable<string>> GetCategoriesAsync();
+        Task<(IEnumerable<Product> Items, int TotalCount)> GetPagedProductsAsync(
+            int page, int pageSize, string? search, string? category, string? brand, 
+            decimal? minPrice, decimal? maxPrice, int? rating, bool? inStock, string? sortBy);
     }
 }

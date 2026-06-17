@@ -28,8 +28,11 @@ namespace Ecommerce.Persistence.Data
             }
 
             // Seed Products
-            if (!context.Products.Any())
+            if (context.Products.Count() < 30)
             {
+                context.Products.RemoveRange(context.Products);
+                await context.SaveChangesAsync();
+
                 var products = new[]
                 {
                     new Product
@@ -198,7 +201,41 @@ namespace Ecommerce.Persistence.Data
                         NewArrival = true
                     }
                 };
-                await context.Products.AddRangeAsync(products);
+                
+                var productList = products.ToList();
+                var categories = new[] { "Home Decor", "Accessories", "Electronics", "Furniture", "Apparel" };
+                var brands = new[] { "Lumina", "Nomad", "Acoustic", "Chronos", "Sonic", "Razer", "Intel", "Hydra", "Ergo", "Keychron", "Nike" };
+                var materials = new[] { "Metal", "Nylon", "Plastic", "Leather", "Steel", "Wood", "Cotton" };
+                var colorsList = new[] { "Black", "White", "Silver", "Gray", "Blue", "Green", "Red" };
+                var random = new Random(42);
+
+                for (int i = 1; i <= 50; i++)
+                {
+                    var category = categories[random.Next(categories.Length)];
+                    var brand = brands[random.Next(brands.Length)];
+                    var material = materials[random.Next(materials.Length)];
+                    var colors = string.Join(",", colorsList.OrderBy(x => random.Next()).Take(random.Next(1, 4)));
+                    
+                    productList.Add(new Product
+                    {
+                        Name = $"{brand} {category} Item #{i}",
+                        Brand = brand,
+                        Price = Math.Round((decimal)(random.NextDouble() * 500 + 10), 2),
+                        Category = category,
+                        Material = material,
+                        Sizes = "S,M,L,XL",
+                        Colors = colors,
+                        Description = $"High quality product from {brand} designed for {category}.",
+                        Img = i % 2 == 0 
+                            ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500" 
+                            : "https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=500",
+                        InStock = random.Next(10) > 1,
+                        Featured = random.Next(10) > 7,
+                        NewArrival = random.Next(10) > 7
+                    });
+                }
+                
+                await context.Products.AddRangeAsync(productList);
             }
 
             await context.SaveChangesAsync();

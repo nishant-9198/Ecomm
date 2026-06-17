@@ -1,10 +1,19 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import { AppContext } from "../context/AppContext";
 import { toast } from "sonner";
 import { Truck, RotateCcw, ShieldCheck, Heart, Minus, Plus } from "lucide-react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import InfiniteScroll from "./ui/InfiniteScroll";
+import { getProductsPaged } from "../utils/getProducts";
 
 const ProductModal = ({ product, onClose }) => {
   const { user, setUser } = useContext(AppContext);
+  const [activeProduct, setActiveProduct] = useState(product);
+
+  // Sync activeProduct when prop changes
+  useEffect(() => {
+    setActiveProduct(product);
+  }, [product]);
 
   // ✅ LOCK SCROLL
   useEffect(() => {
@@ -15,25 +24,69 @@ const ProductModal = ({ product, onClose }) => {
   }, []);
 
   // ✅ PARSE ATTRIBUTES
-  const colorsList = product?.colors
-    ? product.colors.split(",").map((c) => c.trim()).filter(Boolean)
-    : ["Default"];
+  const colorsList = useMemo(() => {
+    return activeProduct?.colors
+      ? activeProduct.colors.split(",").map((c) => c.trim()).filter(Boolean)
+      : ["Default"];
+  }, [activeProduct]);
 
-  const sizesList = product?.sizes
-    ? product.sizes.split(",").map((s) => s.trim()).filter(Boolean)
-    : ["One Size"];
+  const sizesList = useMemo(() => {
+    return activeProduct?.sizes
+      ? activeProduct.sizes.split(",").map((s) => s.trim()).filter(Boolean)
+      : ["One Size"];
+  }, [activeProduct]);
 
   // ✅ LOCAL STATE
-  const [selectedColor, setSelectedColor] = useState(colorsList[0]);
-  const [selectedSize, setSelectedSize] = useState(sizesList[0]);
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("details");
 
-  if (!product) return null;
+  // Reset local selection states when activeProduct changes
+  useEffect(() => {
+    if (activeProduct) {
+      setSelectedColor(colorsList[0] || "Default");
+      setSelectedSize(sizesList[0] || "One Size");
+      setQuantity(1);
+      setActiveTab("details");
+    }
+  }, [activeProduct, colorsList, sizesList]);
+
+  // Load related products using Infinite Scroll
+  const {
+    data: relatedData,
+    fetchNextPage: fetchNextRelatedPage,
+    hasNextPage: hasNextRelatedPage,
+    isFetchingNextPage: isFetchingNextRelatedPage,
+    status: relatedStatus
+  } = useInfiniteQuery({
+    queryKey: ["relatedProducts", activeProduct?.id, activeProduct?.category],
+    queryFn: ({ pageParam = 1 }) =>
+      getProductsPaged({
+        page: pageParam,
+        pageSize: 4, // Page size of 4 for small compact list
+        category: activeProduct?.category || "ALL",
+        search: ""
+      }),
+    getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.page + 1 : undefined),
+    initialPageParam: 1,
+    enabled: !!activeProduct
+  });
+
+  // Extract and filter current product out of related items
+  const relatedItems = useMemo(() => {
+    if (!relatedData || !activeProduct) return [];
+    const items = relatedData.pages.reduce((acc, pageObj) => {
+      return [...acc, ...(pageObj.items || [])];
+    }, []);
+    return items.filter((item) => item.id !== activeProduct.id);
+  }, [relatedData, activeProduct]);
+
+  if (!activeProduct) return null;
 
   // ✅ DYNAMIC REVIEW COUNT BASED ON PRODUCT ID
-  const reviewsCount = product.id 
-    ? (typeof product.id === "string" ? product.id.charCodeAt(0) % 40 + 20 : product.id % 40 + 20) 
+  const reviewsCount = activeProduct.id 
+    ? (typeof activeProduct.id === "string" ? activeProduct.id.charCodeAt(0) % 40 + 20 : activeProduct.id % 40 + 20) 
     : 31;
 
   const addToCart = () => {
@@ -47,7 +100,7 @@ const ProductModal = ({ product, onClose }) => {
       cart: [
         ...(prev.cart || []),
         {
-          ...product,
+          ...activeProduct,
           quantity: quantity,
           selectedColor: selectedColor,
           selectedSize: selectedSize
@@ -55,7 +108,7 @@ const ProductModal = ({ product, onClose }) => {
       ],
     }));
 
-    toast(`${product.name} added to cart`);
+    toast(`${activeProduct.name} added to cart`);
     onClose();
   };
 
@@ -71,17 +124,7 @@ const ProductModal = ({ product, onClose }) => {
       {/* ✅ MODAL CONTAINER */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="
-          relative z-10
-          w-full max-w-4xl
-          bg-gradient-to-br from-[#020617] via-black to-[#020617]
-          border border-white/10
-          rounded-2xl
-          shadow-[0_0_50px_rgba(0,0,0,0.95)]
-          p-6 md:p-8
-          max-h-[90vh]
-          overflow-y-auto
-        "
+        className="modal-container-scroll relative z-10 w-full max-w-4xl bg-gradient-to-br from-[#020617] via-black to-[#020617] border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.95)] p-6 md:p-8 max-h-[90vh] overflow-y-auto"
       >
 
         {/* ✅ CLOSE BUTTON */}
@@ -101,7 +144,7 @@ const ProductModal = ({ product, onClose }) => {
             {/* THUMBNAIL PREVIEWS (DESKTOP) */}
             <div className="hidden sm:flex flex-col gap-3">
               <div className="w-16 h-16 bg-white/5 border border-white/20 rounded-lg overflow-hidden p-1 flex items-center justify-center cursor-default">
-                <img src={product.img} alt="thumbnail" className="object-contain max-h-full" />
+                <img src={activeProduct.img} alt="thumbnail" className="object-contain max-h-full" />
               </div>
               <div className="w-16 h-16 bg-white/5 border border-white/5 rounded-lg overflow-hidden flex items-center justify-center cursor-not-allowed opacity-40">
                 <span className="text-[10px] text-white/30 text-center font-light uppercase tracking-wider">
@@ -126,8 +169,8 @@ const ProductModal = ({ product, onClose }) => {
               "
             >
               <img
-                src={product.img}
-                alt={product.name}
+                src={activeProduct.img}
+                alt={activeProduct.name}
                 className="
                   max-h-full object-contain
                   transition-transform duration-700 ease-out
@@ -146,12 +189,12 @@ const ProductModal = ({ product, onClose }) => {
             
             {/* BRAND */}
             <p className="text-[10px] tracking-[0.25em] font-sans font-light text-white/40 uppercase mb-1">
-              {product.brand || "SHOP EASE"}
+              {activeProduct.brand || "SHOP EASE"}
             </p>
 
             {/* TITLE */}
             <h2 className="text-xl md:text-2xl font-serif font-light tracking-wide text-white leading-snug">
-              {product.name}
+              {activeProduct.name}
             </h2>
 
             {/* RATINGS */}
@@ -164,7 +207,7 @@ const ProductModal = ({ product, onClose }) => {
 
             {/* PRICE */}
             <div className="text-2xl font-serif font-light text-white mt-4">
-              ₹{product.price?.toLocaleString()}
+              ₹{activeProduct.price?.toLocaleString()}
             </div>
 
             <div className="border-t border-white/10 my-4" />
@@ -242,7 +285,7 @@ const ProductModal = ({ product, onClose }) => {
                 </button>
               </div>
               <span className="text-[11px] text-white/40 font-light">
-                {product.inStock ? "12 available" : "Out of stock"}
+                {activeProduct.inStock ? "12 available" : "Out of stock"}
               </span>
             </div>
 
@@ -250,11 +293,11 @@ const ProductModal = ({ product, onClose }) => {
             <div className="flex gap-3 mt-auto">
               <button
                 onClick={addToCart}
-                disabled={!product.inStock}
+                disabled={!activeProduct.inStock}
                 className={`
                   flex-1 py-3 text-[10px] tracking-[0.25em] uppercase transition duration-300 font-medium cursor-pointer border
                   ${
-                    product.inStock
+                    activeProduct.inStock
                       ? "bg-white text-black border-white hover:bg-transparent hover:text-white"
                       : "bg-white/5 text-white/20 border-white/5 cursor-not-allowed"
                   }
@@ -319,11 +362,11 @@ const ProductModal = ({ product, onClose }) => {
           <div className="text-xs text-white/60 leading-relaxed font-light min-h-[90px]">
             {activeTab === "details" && (
               <div className="space-y-3">
-                <p>{product.description}</p>
+                <p>{activeProduct.description}</p>
                 <ul className="space-y-1 pl-4 list-disc text-white/45">
-                  {product.material && <li>Material: {product.material}</li>}
-                  {product.brand && <li>Brand: {product.brand}</li>}
-                  {product.category && <li className="capitalize">Style: {product.category}</li>}
+                  {activeProduct.material && <li>Material: {activeProduct.material}</li>}
+                  {activeProduct.brand && <li>Brand: {activeProduct.brand}</li>}
+                  {activeProduct.category && <li className="capitalize">Style: {activeProduct.category}</li>}
                   <li>Status: In Stock</li>
                 </ul>
               </div>
@@ -344,7 +387,52 @@ const ProductModal = ({ product, onClose }) => {
               </ul>
             )}
           </div>
+        </div>
 
+        {/* ✅ RELATED PRODUCTS SECTION (Infinite Scroll) */}
+        <div className="mt-12 pt-8 border-t border-white/10">
+          <h3 className="text-sm font-serif font-light tracking-wide uppercase text-white/95 mb-6 text-left">
+            You Might Also Like
+          </h3>
+          {relatedStatus === "pending" ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse bg-white/5 border border-white/5 rounded-xl p-3 h-44" />
+              ))}
+            </div>
+          ) : relatedItems.length === 0 ? (
+            <p className="text-xs text-white/40 text-left">No related products found</p>
+          ) : (
+            <InfiniteScroll
+              loadMore={fetchNextRelatedPage}
+              hasMore={!!hasNextRelatedPage}
+              isLoading={isFetchingNextRelatedPage}
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
+                {relatedItems.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      setActiveProduct(item);
+                      const container = document.querySelector(".modal-container-scroll");
+                      if (container) {
+                        container.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                    }}
+                    className="bg-white/[0.02] border border-white/10 rounded-xl p-3 flex flex-col justify-between hover:border-yellow-400 hover:shadow-[0_0_15px_rgba(250,204,21,0.2)] transition cursor-pointer group"
+                  >
+                    <div className="h-24 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden mb-2">
+                      <img src={item.img} alt={item.name} className="h-full object-contain group-hover:scale-105 transition duration-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-[11px] font-medium text-white line-clamp-1 leading-snug">{item.name}</h4>
+                      <p className="text-[10px] text-yellow-400 font-serif">₹{item.price?.toLocaleString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </InfiniteScroll>
+          )}
         </div>
 
       </div>
@@ -353,4 +441,3 @@ const ProductModal = ({ product, onClose }) => {
 };
 
 export default ProductModal;
-

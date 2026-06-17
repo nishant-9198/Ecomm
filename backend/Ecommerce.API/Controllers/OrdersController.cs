@@ -20,12 +20,21 @@ namespace Ecommerce.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOrders()
+        public async Task<IActionResult> GetOrders(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] bool paged = false)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            if (paged)
+            {
+                var pagedResult = await _orderService.GetPagedOrdersAsync(userId, role ?? "user", page, pageSize);
+                return Ok(pagedResult);
+            }
 
             if (role == "admin")
             {
