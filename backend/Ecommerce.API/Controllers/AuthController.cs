@@ -22,8 +22,8 @@ namespace Ecommerce.API.Controllers
         [HttpPost("send-otp")]
         public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
         {
-            await _authService.SendOtpAsync(request);
-            return Ok(new { Message = "OTP sent successfully ✅" });
+            var isExistingUser = await _authService.SendOtpAsync(request);
+            return Ok(new { Message = "OTP sent successfully ✅", IsExistingUser = isExistingUser });
         }
 
         [HttpPost("verify-otp")]

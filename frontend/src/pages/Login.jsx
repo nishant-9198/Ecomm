@@ -11,6 +11,7 @@ export const Login = () => {
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
   const [showOTP, setShowOTP] = useState(false);
+  const [isExistingUser, setIsExistingUser] = useState(false);
 
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
@@ -31,6 +32,7 @@ export const Login = () => {
 
     const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
     const API_URL = import.meta.env.VITE_API_URL;
+    let exists = false;
 
     if (useBackend) {
       try {
@@ -43,12 +45,18 @@ export const Login = () => {
           toast.error("Failed to send OTP");
           return;
         }
+        const data = await res.json();
+        exists = data.isExistingUser || false;
       } catch (err) {
         toast.error("Error connecting to backend");
         return;
       }
+    } else {
+      const localUsers = JSON.parse(localStorage.getItem("users")) || [];
+      exists = localUsers.some(u => u.mobile === mobile) || mobile === "9198004022";
     }
 
+    setIsExistingUser(exists);
     setShowOTP(true);
     toast.success("OTP sent ✅");
   };
@@ -133,8 +141,16 @@ export const Login = () => {
 
         <div className="w-full max-w-md">
 
-          <h2 className="text-2xl font-light mb-8">
-            Sign In
+          <h2 className="text-2xl font-light mb-8 tracking-widest">
+            {!showOTP ? (
+              <>
+                Shop <span className="text-gray-500">Ease</span>
+              </>
+            ) : isExistingUser ? (
+              "Login"
+            ) : (
+              "Sign Up"
+            )}
           </h2>
 
           {/* ✅ MOBILE */}

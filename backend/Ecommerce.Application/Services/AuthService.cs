@@ -28,7 +28,8 @@ namespace Ecommerce.Application.Services
             // For production, integrate SMS gateway here.
             // For this project, we mock OTP "000000" and log it.
             Console.WriteLine($"OTP '000000' sent successfully to: {request.Mobile}");
-            return await Task.FromResult(true);
+            var user = await _unitOfWork.Users.GetByMobileAsync(request.Mobile);
+            return user != null;
         }
 
         public async Task<AuthResponse> VerifyOtpAsync(VerifyOtpRequest request)
