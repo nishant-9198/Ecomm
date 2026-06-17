@@ -40,7 +40,7 @@ namespace Ecommerce.Application.Mappings
                 }));
 
             CreateMap<OrderCreateDto, Order>()
-                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.Date) ? DateTime.UtcNow : DateTime.Parse(src.Date, CultureInfo.InvariantCulture)))
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => ParseDateSafely(src.Date)))
                 .ForMember(dest => dest.ShippingName, opt => opt.MapFrom(src => src.Address.Name))
                 .ForMember(dest => dest.ShippingHouse, opt => opt.MapFrom(src => src.Address.House))
                 .ForMember(dest => dest.ShippingAddress1, opt => opt.MapFrom(src => src.Address.Address1))
@@ -48,6 +48,35 @@ namespace Ecommerce.Application.Mappings
                 .ForMember(dest => dest.ShippingState, opt => opt.MapFrom(src => src.Address.State))
                 .ForMember(dest => dest.ShippingCountry, opt => opt.MapFrom(src => src.Address.Country))
                 .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products));
+        }
+
+        private static DateTime ParseDateSafely(string dateStr)
+        {
+            if (string.IsNullOrEmpty(dateStr))
+            {
+                return DateTime.UtcNow;
+            }
+
+            // Try InvariantCulture
+            if (DateTime.TryParse(dateStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            {
+                return date;
+            }
+
+            // Try common formats explicitly (e.g. dd/MM/yyyy used in India, yyyy-MM-dd, etc.)
+            string[] formats = { "dd/MM/yyyy", "d/M/yyyy", "dd-MM-yyyy", "d-M-yyyy", "yyyy-MM-dd", "MM/dd/yyyy" };
+            if (DateTime.TryParseExact(dateStr, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+            {
+                return date;
+            }
+
+            // Try parsing using local system default
+            if (DateTime.TryParse(dateStr, out date))
+            {
+                return date;
+            }
+
+            return DateTime.UtcNow; // Safe fallback
         }
     }
 }

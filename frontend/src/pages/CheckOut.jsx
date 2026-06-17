@@ -110,7 +110,7 @@ const Checkout = () => {
           paymentId: response.razorpay_payment_id,
           status: "Confirmed",
           payment: "Paid",
-          date: new Date().toLocaleDateString(),
+          date: new Date().toISOString(),
         };
 
         const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
