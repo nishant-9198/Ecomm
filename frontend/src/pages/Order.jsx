@@ -44,27 +44,28 @@ const Orders = () => {
 
   useEffect(() => {
     const loadOrders = async () => {
-      const useBackend =
-        import.meta.env.VITE_USE_BACKEND === "true";
-      const API_URL = import.meta.env.VITE_API_URL;
-      // ✅ BACKEND
+      const useBackend = import.meta.env.VITE_USE_BACKEND === "true";
+
+      // Always load local orders as the base
+      const userKey = `orders_${user?.id}`;
+      const localOrders = JSON.parse(localStorage.getItem(userKey)) || [];
+
       if (useBackend) {
         try {
           const res = await apiFetch("/api/orders");
-          const data = await res.json();
-          setOrders(data);
-          return;
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              setOrders(data);
+              return;
+            }
+          }
         } catch {
-          console.log("Backend failed → local");
+          console.log("Backend failed → falling back to local orders");
         }
       }
 
-      // ✅ ✅ FINAL FIX (USER SPECIFIC)
-      const userKey = `orders_${user?.id}`;
-
-      const localOrders =
-        JSON.parse(localStorage.getItem(userKey)) || [];
-
+      // Fallback: show localStorage orders so user always sees their orders
       setOrders(localOrders);
     };
 
