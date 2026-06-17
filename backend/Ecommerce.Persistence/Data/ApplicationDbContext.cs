@@ -35,7 +35,7 @@ namespace Ecommerce.Persistence.Data
             {
                 entity.HasKey(p => p.Id);
                 entity.Property(p => p.Name).IsRequired().HasMaxLength(200);
-                entity.Property(p => p.Price).HasColumnType("decimal(18,2)");
+                entity.Property(p => p.Price).HasColumnType("numeric(18,2)");
             });
 
             // Order Entity Configurations
@@ -43,7 +43,7 @@ namespace Ecommerce.Persistence.Data
             {
                 entity.HasKey(o => o.Id);
                 entity.Property(o => o.UserId).IsRequired();
-                entity.Property(o => o.Total).HasColumnType("decimal(18,2)");
+                entity.Property(o => o.Total).HasColumnType("numeric(18,2)");
                 entity.Property(o => o.Status).HasMaxLength(50);
                 entity.Property(o => o.Payment).HasMaxLength(50);
                 entity.Property(o => o.PaymentId).HasMaxLength(100);
@@ -68,7 +68,7 @@ namespace Ecommerce.Persistence.Data
             {
                 entity.HasKey(oi => oi.Id);
                 entity.Property(oi => oi.Name).IsRequired().HasMaxLength(200);
-                entity.Property(oi => oi.Price).HasColumnType("decimal(18,2)");
+                entity.Property(oi => oi.Price).HasColumnType("numeric(18,2)");
             });
 
             // Review Entity Configurations
